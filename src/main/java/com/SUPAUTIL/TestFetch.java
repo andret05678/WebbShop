@@ -1,11 +1,11 @@
-package com;
+package com.SUPAUTIL;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.*;
 import java.sql.*;
 
-public class test extends HttpServlet {
+public class TestFetch extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -14,7 +14,6 @@ public class test extends HttpServlet {
         resp.setContentType("text/html");
         PrintWriter out = resp.getWriter();
 
-        // Explicitly load the PostgreSQL driver
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -30,9 +29,13 @@ public class test extends HttpServlet {
             out.println("<h2>Connected to Supabase successfully!</h2>");
 
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT NOW()");
-            if (rs.next()) {
-                out.println("<p>DB time: " + rs.getString(1) + "</p>");
+            ResultSet rs = stmt.executeQuery("SELECT id, name, price FROM Product LIMIT 5");
+            out.println("<h3>Products:</h3>");
+            out.println("<ul>");
+            while (rs.next()) {
+                out.println("<li>ID: " + rs.getInt("id") +
+                        ", Name: " + rs.getString("name") +
+                        ", Price: $" + rs.getBigDecimal("price") + "</li>");
             }
 
         } catch (SQLException e) {

@@ -5,7 +5,7 @@
          version="6.0">
     <servlet>
         <servlet-name>test</servlet-name>
-        <servlet-class>com.test</servlet-class>
+        <servlet-class>com.SUPAUTIL.test</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -15,7 +15,7 @@
 
     <servlet>
         <servlet-name>TestFetch</servlet-name>
-        <servlet-class>com.TestFetch</servlet-class>
+        <servlet-class>com.SUPAUTIL.TestFetch</servlet-class>
     </servlet>
 
     <servlet-mapping>
