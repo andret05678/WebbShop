@@ -1,4 +1,4 @@
 package com.DB;
 
-public class ProductDB {
+public interface ProductDB {
 }

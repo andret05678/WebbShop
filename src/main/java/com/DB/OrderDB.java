@@ -1,4 +1,5 @@
 package com.DB;
 
-public class OrderDB {
+public interface OrderDB {
+
 }
