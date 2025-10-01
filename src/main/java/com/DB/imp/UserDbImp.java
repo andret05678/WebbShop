@@ -1,12 +1,15 @@
 package com.DB.imp;
 
 import com.Model.User;
+import com.SUPAUTIL.supa;
+
+import java.sql.SQLException;
 
 public class UserDbImp implements com.DB.UserDB {
 
     @Override
-    public User findByEmail(String email) {
-        return null;
+    public User findByEmail(String email) throws SQLException {
+        supa.getConnection();
     }
 
     @Override
