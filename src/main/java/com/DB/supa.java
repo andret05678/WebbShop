@@ -1,4 +1,4 @@
-package com.SUPAUTIL;
+package com.DB;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

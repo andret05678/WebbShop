@@ -1,11 +1,11 @@
-package com.Model;
+package com.BO;
 
 public class Order {
     private int id;
     private int userId;
     private String status;
 
-    public Order(int id, int userId, String status) {
+    private Order(int id, int userId, String status) {
         this.id = id;
         this.userId = userId;
         this.status = status;

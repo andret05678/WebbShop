@@ -1,4 +1,4 @@
-package com.Model;
+package com.BO;
 
 public class OrderItem {
     private int orderId;
@@ -6,7 +6,7 @@ public class OrderItem {
     private int quantity;
     private double price;
 
-    public OrderItem(int orderId, int productId, int quantity, double price) {
+    private OrderItem(int orderId, int productId, int quantity, double price) {
         this.orderId = orderId;
         this.productId = productId;
         this.quantity = quantity;

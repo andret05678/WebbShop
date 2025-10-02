@@ -1,6 +1,6 @@
 package com.DB;
 
-import com.Model.User;
+import com.BO.User;
 
 import java.sql.SQLException;
 

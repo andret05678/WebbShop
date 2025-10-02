@@ -1,4 +1,8 @@
-package com.Model;
+package com.BO;
+
+import com.DB.imp.UserDbImp;
+
+import java.util.Collection;
 
 public class User {
     private int id;
@@ -7,7 +11,11 @@ public class User {
     private String password;
     private int roleId;
 
-    public User(int id, String email, String username, String password, int roleId) {
+    static public Collection searchUser(String email, String username, String password) {
+        return UserDbImp.searchUser(email, username, password);
+    }
+
+    protected User(int id, String email, String username, String password, int roleId) {
         this.id = id;
         this.email = email;
         this.username = username;
