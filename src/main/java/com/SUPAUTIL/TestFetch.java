@@ -1,5 +1,6 @@
 package com.SUPAUTIL;
 
+import com.DB.imp.ProductDbImp;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.*;
@@ -37,6 +38,8 @@ public class TestFetch extends HttpServlet {
                         ", Name: " + rs.getString("name") +
                         ", Price: $" + rs.getBigDecimal("price") + "</li>");
             }
+            // Testar procuct fetching
+            out.println("<p>ID: " + ProductDbImp.findById(2).toString() + "</p>");
 
         } catch (SQLException e) {
             e.printStackTrace();
