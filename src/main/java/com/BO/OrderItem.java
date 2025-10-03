@@ -6,7 +6,7 @@ public class OrderItem {
     private int quantity;
     private double price;
 
-    private OrderItem(int orderId, int productId, int quantity, double price) {
+    protected OrderItem(int orderId, int productId, int quantity, double price) {
         this.orderId = orderId;
         this.productId = productId;
         this.quantity = quantity;

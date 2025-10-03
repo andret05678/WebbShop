@@ -5,7 +5,7 @@ public class Order {
     private int userId;
     private String status;
 
-    private Order(int id, int userId, String status) {
+    protected Order(int id, int userId, String status) {
         this.id = id;
         this.userId = userId;
         this.status = status;
