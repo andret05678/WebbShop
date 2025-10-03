@@ -11,19 +11,21 @@ public class User {
     private String username;
     private String password;
     private int roleId;
-    private final String salt;
 
     static public Collection searchUser(String email, String username, String password) {
         return UserDbImp.searchUser(email, username, password);
     }
 
-    protected User(int id, String email, String username, String password, int roleId, String salt) {
+    public static User createUser(int id, String email, String username, String password, int roleId) {
+        return new User(id, email, username, password, roleId);
+    }
+
+    protected User(int id, String email, String username, String password, int roleId) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
         this.roleId = roleId;
-        this.salt = salt;
     }
 
     public int getId() {
@@ -52,10 +54,6 @@ public class User {
 
     public String getPassword() {
         return password;
-    }
-
-    public String getSalt() {
-        return salt;
     }
 
     public void setPassword(String password) {

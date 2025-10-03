@@ -9,30 +9,53 @@ import java.nio.charset.StandardCharsets;
 public class PasswordUtil {
     private static final SecureRandom RAND = new SecureRandom();
     private static final int SALT_BYTES = 16;
+    private static final String DELIMITER = ":";
 
-    // generate a new random salt (Base64)
-    public static String generateSalt() {
-        byte[] salt = new byte[SALT_BYTES];
-        RAND.nextBytes(salt);
-        return Base64.getEncoder().encodeToString(salt);
-    }
-
-    // Hash password with salt using SHA-256, return Base64(hash)
-    public static String hashPassword(String password, String saltBase64) {
+    // Generate salt+hash combination stored as "salt:hash"
+    public static String generateSaltedHash(String password) {
         try {
+            // Generate salt
+            byte[] salt = new byte[SALT_BYTES];
+            RAND.nextBytes(salt);
+            String saltBase64 = Base64.getEncoder().encodeToString(salt);
+
+            // Hash password with salt
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] salt = Base64.getDecoder().decode(saltBase64);
             md.update(salt);
             byte[] hashed = md.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hashed);
+            String hashBase64 = Base64.getEncoder().encodeToString(hashed);
+
+            // Return combined string
+            return saltBase64 + DELIMITER + hashBase64;
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 not supported", e);
         }
     }
 
-    // verify plain password against stored salt+hash
-    public static boolean verifyPassword(String plain, String saltBase64, String storedHashBase64) {
-        String h = hashPassword(plain, saltBase64);
-        return h.equals(storedHashBase64);
+    // Verify plain password against stored salt:hash combination
+    public static boolean verifyPassword(String plainPassword, String storedSaltedHash) {
+        if (storedSaltedHash == null || !storedSaltedHash.contains(DELIMITER)) {
+            return false;
+        }
+
+        String[] parts = storedSaltedHash.split(DELIMITER, 2);
+        if (parts.length != 2) {
+            return false;
+        }
+
+        String saltBase64 = parts[0];
+        String storedHash = parts[1];
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] salt = Base64.getDecoder().decode(saltBase64);
+            md.update(salt);
+            byte[] hashed = md.digest(plainPassword.getBytes(StandardCharsets.UTF_8));
+            String computedHash = Base64.getEncoder().encodeToString(hashed);
+
+            return computedHash.equals(storedHash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 not supported", e);
+        }
     }
 }

@@ -15,8 +15,8 @@ public class UserDbImp extends User {
         return null;
     }
 
-    private UserDbImp(int id, String email, String username, String password, int roleId, String salt) {
-        super(id, email, username, password, roleId, salt);
+    private UserDbImp(int id, String email, String username, String password, int roleId) {
+        super(id, email, username, password, roleId);
     }
 
 
@@ -31,12 +31,20 @@ public class UserDbImp extends User {
         return null;
     }
 
-    public boolean insert(User user) throws SQLException {
+    public static boolean insert(User user) throws SQLException {
         Connection conn = supa.getConnection();
         Statement stmt = conn.createStatement();
-        stmt.executeQuery("INSERT INTO user ")
 
+        String sql = "INSERT INTO users (email, username, password, role_id) " +
+                "VALUES ('" + user.getEmail() + "', '" +
+                user.getUsername() + "', '" +
+                user.getPassword() + "', " +
+                user.getRoleId() + ")";
+
+        int rowsAffected = stmt.executeUpdate(sql);
+        return rowsAffected > 0;
     }
+
 
     public boolean update(User user) {
         return false;
