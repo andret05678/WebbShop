@@ -15,12 +15,12 @@ public class UserDbImp extends User {
         return null;
     }
 
-    protected UserDbImp(int id, String email, String username, String password, int roleId) {
-        super(id, email, username, password, roleId);
+    private UserDbImp(int id, String email, String username, String password, int roleId, String salt) {
+        super(id, email, username, password, roleId, salt);
     }
 
 
-    public User findByEmail(String email) throws SQLException {
+    public static User findByEmail(String email) throws SQLException {
         Connection conn = supa.getConnection();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT email FROM User LIMIT 1");
@@ -31,8 +31,11 @@ public class UserDbImp extends User {
         return null;
     }
 
-    public User insert(User user) {
-        return null;
+    public boolean insert(User user) throws SQLException {
+        Connection conn = supa.getConnection();
+        Statement stmt = conn.createStatement();
+        stmt.executeQuery("INSERT INTO user ")
+
     }
 
     public boolean update(User user) {

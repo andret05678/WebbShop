@@ -2,6 +2,7 @@ package com.BO;
 
 import com.DB.imp.UserDbImp;
 
+import java.util.Base64;
 import java.util.Collection;
 
 public class User {
@@ -10,17 +11,19 @@ public class User {
     private String username;
     private String password;
     private int roleId;
+    private final String salt;
 
     static public Collection searchUser(String email, String username, String password) {
         return UserDbImp.searchUser(email, username, password);
     }
 
-    protected User(int id, String email, String username, String password, int roleId) {
+    protected User(int id, String email, String username, String password, int roleId, String salt) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
         this.roleId = roleId;
+        this.salt = salt;
     }
 
     public int getId() {
@@ -49,6 +52,10 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getSalt() {
+        return salt;
     }
 
     public void setPassword(String password) {
