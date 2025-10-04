@@ -1,5 +1,7 @@
 package com.SUPAUTIL;
 
+import com.BO.Services.UserServices;
+import com.BO.User;
 import com.DB.imp.ProductDbImp;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -40,6 +42,33 @@ public class TestFetch extends HttpServlet {
             }
             // Testar procuct fetching
             out.println("<p>ID: " + ProductDbImp.findById(2).toString() + "</p>");
+
+
+
+            UserServices userServices = new UserServices();
+            String testEmail = "Felix@hotmail.com";
+            String testPassword = "Felix2";
+            int testRoleId = 1;
+
+            User regUser= userServices.register(testEmail, testPassword, "Sven", testRoleId);
+            if (regUser == null) {
+                out.println("<p>Registration failed</p>");
+            }
+
+
+            User loginUser = userServices.login(testEmail, testPassword);
+
+            if (loginUser != null) {
+                req.getSession().setAttribute("token", loginUser.getToken());
+                req.getSession().setAttribute("userId", loginUser.getId());
+
+                out.println("<p> Login successful!</p>");
+                out.println("<p>User: " + loginUser.getUsername() + "</p>");
+                out.println("<p>Email: " + loginUser.getEmail() + "</p>");
+                out.println("<p>Token: " + loginUser.getToken() + "</p>");
+            } else {
+                out.println("<p> Login failed (check email/password or token generation)</p>");
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();

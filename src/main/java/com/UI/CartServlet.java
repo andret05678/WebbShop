@@ -12,6 +12,12 @@ public class CartServlet extends HttpServlet {
         String token = (String)request.getSession().getAttribute("token");
 
 
+        if (token == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized: Please log in first.");
+            return;
+        }
+        response.getWriter().write("Access granted. Your token is: " + token);
     }
 
 

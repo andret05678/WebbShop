@@ -11,12 +11,12 @@ import java.util.Collection;
 
 public class UserDbImp extends User {
 
-    public static Collection searchUser(String email, String username, String password) {
+    public static Collection searchUser(String email, String username, String password, String token) {
         return null;
     }
 
-    private UserDbImp(int id, String email, String username, String password, int roleId) {
-        super(id, email, username, password, roleId);
+    private UserDbImp(int id, String email, String username, String password, int roleId,String token) {
+        super(id, email, username, password, roleId, token);
     }
 
 
@@ -24,7 +24,17 @@ public class UserDbImp extends User {
         Connection conn = supa.getConnection();
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("SELECT email FROM User LIMIT 1");
-        return (User) rs;
+        if (rs.next()) {
+            return  User.createUser(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getInt("role_id"),
+                    rs.getString("token")
+            );
+        }
+        return null;
     }
 
     public User findById(int id) {
@@ -35,11 +45,12 @@ public class UserDbImp extends User {
         Connection conn = supa.getConnection();
         Statement stmt = conn.createStatement();
 
-        String sql = "INSERT INTO users (email, username, password, role_id) " +
+        String sql = "INSERT INTO user (email, username, password, role_id, token) " +
                 "VALUES ('" + user.getEmail() + "', '" +
                 user.getUsername() + "', '" +
                 user.getPassword() + "', " +
-                user.getRoleId() + ")";
+                user.getRoleId() + "', ''" + user.getToken() + "')";
+
 
         int rowsAffected = stmt.executeUpdate(sql);
         return rowsAffected > 0;

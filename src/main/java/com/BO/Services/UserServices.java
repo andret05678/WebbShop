@@ -4,6 +4,7 @@ import com.BO.PasswordUtil;
 import com.BO.User;
 import com.DB.imp.UserDbImp;
 import java.sql.SQLException;
+import java.util.UUID;
 
 
 public class UserServices {
@@ -19,8 +20,9 @@ public class UserServices {
             }
 
             String saltedHash = PasswordUtil.generateSaltedHash(password);
+            String token = UUID.randomUUID().toString();
 
-            User newUser = User.createUser(0, email, username, saltedHash, roleId);
+            User newUser = User.createUser(0, email, username, saltedHash, roleId,token);
             boolean inserted = UserDbImp.insert(newUser);
 
             return inserted ? newUser : null;
