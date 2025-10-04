@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class ProductDbImp extends Product {
     private ProductDbImp(int id, String name, String description, double price, int stock, int categoryId){
@@ -24,5 +26,16 @@ public class ProductDbImp extends Product {
         int stock = rs.getInt("STOCK");
         int categoryId = rs.getInt("CATEGORYID");
         return new ProductDbImp(id, name, description, price, stock, categoryId);
+    }
+
+    public static Collection findByName(String name) throws SQLException{
+        Connection conn = supa.getConnection();
+        Collection products = new ArrayList();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUCT WHERE NAME = '" + name + "'");
+        while (rs.next()) {
+            products.add(findById(rs.getInt("ID")));
+        }
+        return products;
     }
 }
