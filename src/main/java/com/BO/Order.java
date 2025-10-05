@@ -10,6 +10,9 @@ public class Order {
         this.userId = userId;
         this.status = status;
     }
+    public static Order createOrder(int id, int userId, String status){
+        return new Order(id, userId, status);
+    }
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
