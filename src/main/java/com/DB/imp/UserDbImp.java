@@ -57,7 +57,10 @@ public class UserDbImp extends User {
     }
 
 
-    public boolean update(User user) {
+    public boolean update(User user,int id) throws SQLException {
+        Connection conn = supa.getConnection();
+        Statement stmt = conn.createStatement();
+
         return false;
     }
 

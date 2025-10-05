@@ -1,15 +1,19 @@
 package com.UI;
 
+import com.BO.Product;
+
 public class ProductInfo {
+    private int id;
     private String name;
     private String description;
-    private String price;
+    private int price;
     private String category;
-    private String categoryId;
+    private int categoryId;
     private String categoryName;
     private String categoryDescription;
 
-    public ProductInfo(String name, String description, String price, String category, String categoryId, String categoryName, String categoryDescription) {
+    public ProductInfo(int id,String name, String description, int price, String category, int categoryId, String categoryName, String categoryDescription) {
+        this.id =id;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -17,6 +21,9 @@ public class ProductInfo {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.categoryDescription = categoryDescription;
+    }
+    public int getId() {
+        return id;
     }
     public String getName() {
         return name;
@@ -26,7 +33,7 @@ public class ProductInfo {
         return description;
     }
     public void setDescription(String description) {}
-    public String getPrice() {
+    public int getPrice() {
         return price;
     }
     public void setPrice(String price) {}
@@ -34,7 +41,7 @@ public class ProductInfo {
         return category;
     }
     public void setCategory(String category) {}
-    public String getCategoryId() {
+    public int getCategoryId() {
         return categoryId;
     }
     public void setCategoryId(String categoryId) {}
