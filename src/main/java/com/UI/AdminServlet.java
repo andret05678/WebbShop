@@ -129,5 +129,5 @@ public class AdminServlet extends HttpServlet {
             response.sendRedirect("admin?error=Failed to delete user");
         }
     }
-    
+
 }

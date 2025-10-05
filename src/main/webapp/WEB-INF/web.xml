@@ -15,16 +15,6 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>TestPage</servlet-name>
-        <servlet-class>com.UI.pages.TestPage</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>TestPage</servlet-name>
-        <url-pattern>/testpage</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
         <servlet-name>CartServlet</servlet-name>
         <servlet-class>com.UI.CartServlet</servlet-class>
     </servlet>
