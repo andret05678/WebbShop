@@ -1,6 +1,4 @@
-package com.UI;
-
-import com.BO.Product;
+package com.UI.Info;
 
 public class ProductInfo {
     private int id;
@@ -28,25 +26,28 @@ public class ProductInfo {
     public String getName() {
         return name;
     }
-    public void setName(String name) {}
+
     public String getDescription() {
         return description;
     }
-    public void setDescription(String description) {}
+
     public int getPrice() {
         return price;
     }
-    public void setPrice(String price) {}
+
     public String getCategory() {
         return category;
     }
-    public void setCategory(String category) {}
+
     public int getCategoryId() {
         return categoryId;
     }
-    public void setCategoryId(String categoryId) {}
+
     public String getCategoryName() {
         return categoryName;
     }
 
+    public String getCategoryDescription() {
+        return categoryDescription;
+    }
 }

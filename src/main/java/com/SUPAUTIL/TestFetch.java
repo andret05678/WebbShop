@@ -3,6 +3,7 @@ package com.SUPAUTIL;
 import com.BO.Services.UserServices;
 import com.BO.User;
 import com.DB.imp.ProductDbImp;
+import com.UI.Info.UserInfo;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.*;
@@ -50,22 +51,20 @@ public class TestFetch extends HttpServlet {
             String testPassword = "Felix2";
             int testRoleId = 1;
 
-            User regUser= userServices.register(testEmail, testPassword, "Sven", testRoleId);
+            UserInfo regUser= userServices.register(testEmail, testPassword, "Sven", testRoleId);
             if (regUser == null) {
                 out.println("<p>Registration failed</p>");
             }
 
 
-            User loginUser = userServices.login(testEmail, testPassword);
+            UserInfo loginUser = userServices.login(testEmail, testPassword);
 
             if (loginUser != null) {
-                req.getSession().setAttribute("token", loginUser.getToken());
                 req.getSession().setAttribute("userId", loginUser.getId());
 
                 out.println("<p> Login successful!</p>");
                 out.println("<p>User: " + loginUser.getUsername() + "</p>");
                 out.println("<p>Email: " + loginUser.getEmail() + "</p>");
-                out.println("<p>Token: " + loginUser.getToken() + "</p>");
             } else {
                 out.println("<p> Login failed (check email/password or token generation)</p>");
             }

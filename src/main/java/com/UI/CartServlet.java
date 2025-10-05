@@ -13,6 +13,13 @@ public class CartServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = req.getSession();
+
+        if (session.getAttribute("userInfo") == null) {
+            System.out.println("No userInfo found - redirecting to login");
+            resp.sendRedirect("login");
+            return;
+        }
+
         List<Map<String, String>> cart = (List<Map<String, String>>) session.getAttribute("cart");
         if (cart == null) {
             cart = new ArrayList<>();
@@ -25,12 +32,15 @@ public class CartServlet extends HttpServlet {
             item.put("name", req.getParameter("name"));
             item.put("price", req.getParameter("price"));
             cart.add(item);
+            System.out.println("Added item to cart: " + item);
         } else if ("remove".equals(action)) {
             String idToRemove = req.getParameter("id");
             cart.removeIf(p -> p.get("id").equals(idToRemove));
+            System.out.println("Removed item from cart: " + idToRemove);
         }
 
         session.setAttribute("cart", cart);
+        System.out.println("Cart size: " + cart.size());
         resp.sendRedirect("cart");
     }
 
@@ -38,9 +48,16 @@ public class CartServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        HttpSession session = req.getSession();
+
+        if (session.getAttribute("userInfo") == null) {
+            System.out.println("No userInfo found - redirecting to login");
+            resp.sendRedirect("login");
+            return;
+        }
+
         resp.setContentType("text/html");
         PrintWriter out = resp.getWriter();
-        HttpSession session = req.getSession();
         List<Map<String, String>> cart = (List<Map<String, String>>) session.getAttribute("cart");
         if (cart == null) cart = new ArrayList<>();
 
@@ -57,6 +74,14 @@ public class CartServlet extends HttpServlet {
         out.println("</style></head><body>");
 
         out.println("<h2>Your Cart</h2>");
+
+        // Display username from UserInfo
+        String username = (String) session.getAttribute("username");
+        if (username != null) {
+            out.println("<p style='text-align:center;'>Welcome, " + username + " | ");
+            out.println("<a href='logout'>Logout</a></p>");
+        }
+
         out.println("<a href='testpage'>Back to Store</a><br><br>");
 
         if (cart.isEmpty()) {
@@ -81,7 +106,7 @@ public class CartServlet extends HttpServlet {
                 out.println("</td>");
                 out.println("</tr>");
             }
-            out.println("<tr><td colspan='2'>Total</td><td colspan='2'>$" + total + "</td></tr>");
+            out.println("<tr><td colspan='2'>Total</td><td colspan='2'>$" + String.format("%.2f", total) + "</td></tr>");
             out.println("</table>");
         }
 

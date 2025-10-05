@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.*, com.example.Product" %>
-<%@ page import="com.UI.ProductInfo" %>
+<%@ page import="com.UI.Info.ProductInfo" %>
 <html>
 <head>
     <title>Your Cart</title>

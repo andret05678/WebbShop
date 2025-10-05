@@ -13,21 +13,20 @@ public class User {
     private int roleId;
     private String token;
 
-    static public Collection searchUser(String email, String username, String password, String token) {
-        return UserDbImp.searchUser(email, username, password,token);
+    static public Collection searchUser(String email, String username, String password) {
+        return UserDbImp.searchUser(email, username, password);
     }
 
-    public static User createUser(int id, String email, String username, String password, int roleId, String token) {
-        return new User(id, email, username, password, roleId, token);
+    public static User createUser(int id, String email, String username, String password, int roleId) {
+        return new User(id, email, username, password, roleId);
     }
 
-    protected User(int id, String email, String username, String password, int roleId, String token) {
+    protected User(int id, String email, String username, String password, int roleId) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
         this.roleId = roleId;
-        this.token = token;
     }
 
     public int getId() {
