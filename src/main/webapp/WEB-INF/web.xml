@@ -16,7 +16,7 @@
 
     <servlet>
         <servlet-name>TestPage</servlet-name>
-        <servlet-class>com.UI.TestPage</servlet-class>
+        <servlet-class>com.UI.pages.TestPage</servlet-class>
     </servlet>
 
     <servlet-mapping>

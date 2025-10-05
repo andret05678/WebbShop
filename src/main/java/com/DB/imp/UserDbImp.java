@@ -3,11 +3,10 @@ package com.DB.imp;
 import com.BO.User;
 import com.DB.supa;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class UserDbImp extends User {
 
@@ -39,30 +38,8 @@ public class UserDbImp extends User {
         return null;
     }
 
-    public static boolean insert(User user) throws SQLException {
-        Connection conn = supa.getConnection();
-        Statement stmt = conn.createStatement();
-
-        // FIXED: Removed token field and fixed SQL syntax
-        String sql = "INSERT INTO users (email, username, password, role_id) " +
-                "VALUES ('" + user.getEmail() + "', '" +
-                user.getUsername() + "', '" +
-                user.getPassword() + "', " +
-                user.getRoleId() + ")";
-
-        System.out.println("Executing SQL: " + sql); // Debug line
-
-        int rowsAffected = stmt.executeUpdate(sql);
-
-        // Close resources
-        stmt.close();
-        conn.close();
-
-        return rowsAffected > 0;
-    }
-
     // Alternative: Using PreparedStatement (recommended)
-    public static boolean insertSecure(User user) throws SQLException {
+    public static boolean insert(User user) throws SQLException {
         Connection conn = supa.getConnection();
 
         // FIXED: Use PreparedStatement to prevent SQL injection
@@ -83,20 +60,57 @@ public class UserDbImp extends User {
         return rowsAffected > 0;
     }
 
-    public User findById(int id) {
-        return null;
+    public static List<User> getAllUsers() throws SQLException {
+        List<User> users = new ArrayList<>();
+        Connection conn = supa.getConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT id, email, username, password, role_id FROM users ORDER BY id");
+
+        while (rs.next()) {
+            User user = User.createUser(
+                    rs.getInt("id"),
+                    rs.getString("email"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getInt("role_id")
+            );
+            users.add(user);
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        return users;
     }
 
-    public boolean update(User user, int id) {
-        return false;
+    public static boolean updateUserRole(int userId, int newRoleId) throws SQLException {
+        Connection conn = supa.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement("UPDATE users SET role_id = ? WHERE id = ?");
+
+        pstmt.setInt(1, newRoleId);
+        pstmt.setInt(2, userId);
+
+        int rowsAffected = pstmt.executeUpdate();
+
+        pstmt.close();
+        conn.close();
+
+        return rowsAffected > 0;
     }
 
-    public boolean delete(int id) {
-        return false;
+    public static boolean deleteUser(int userId) throws SQLException {
+        Connection conn = supa.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement("DELETE FROM users WHERE id = ?");
+
+        pstmt.setInt(1, userId);
+
+        int rowsAffected = pstmt.executeUpdate();
+
+        pstmt.close();
+        conn.close();
+
+        return rowsAffected > 0;
     }
 
-    // Factory method to create UserDbImp instances
-    public static User createUserInstance(String email, String username, String password, int roleId) {
-        return new UserDbImp(0, email, username, password, roleId);
-    }
 }

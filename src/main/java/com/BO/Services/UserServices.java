@@ -41,7 +41,6 @@ public class UserServices {
             User testUser = UserDbImp.findByEmail(email);
             if (testUser != null) {
                 if (PasswordUtil.verifyPassword(passwordPlain, testUser.getPassword())) {
-                    // Convert User to UserInfo for the session
                     return new UserInfo(testUser.getId(), testUser.getUsername(), testUser.getRoleId());
                 }
             }

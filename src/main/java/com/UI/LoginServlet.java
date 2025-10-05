@@ -52,8 +52,20 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("userId", userInfo.getId());
             session.setAttribute("username", userInfo.getUsername());
             session.setAttribute("role", userInfo.getRole());
+            if (userInfo.getRole() == 3) {
+                response.sendRedirect("admin");
+            }
+            else if (userInfo.getRole() == 2) {
+                response.sendRedirect("stockmpage");
+            }
+            else if (userInfo.getRole() == 1) {
+                response.sendRedirect("testpage");
+            }
+            else  {
+                request.setAttribute("errorMessage", "invalid permission level");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
+            }
 
-            response.sendRedirect("testpage");
         } else {
             request.setAttribute("errorMessage", "Invalid email or password");
             request.getRequestDispatcher("/login.jsp").forward(request, response);

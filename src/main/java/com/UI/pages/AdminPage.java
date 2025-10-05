@@ -1,4 +1,4 @@
-package com.UI;
+package com.UI.pages;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
 
-public class TestPage extends HttpServlet {
+public class AdminPage extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -27,7 +27,7 @@ public class TestPage extends HttpServlet {
         String url = "jdbc:postgresql://aws-1-eu-north-1.pooler.supabase.com:5432/postgres?user=postgres.yibhllavyovhbjaxwynu&password=Anton056780990";
 
         try (Connection conn = DriverManager.getConnection(url)) {
-            out.println("<html><head><title>Store</title>");
+            out.println("<html><head><title>ADMINSTORE</title>");
             out.println("<style>");
             out.println("body { font-family: Arial, sans-serif; background: #f5f5f5; }");
             out.println("h2 { text-align: center; }");
