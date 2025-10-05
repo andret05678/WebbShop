@@ -168,16 +168,34 @@ public class AdminServlet extends HttpServlet {
             throws ServletException, IOException, SQLException {
         String name = request.getParameter("name");
         String description = request.getParameter("description");
-        double price = Double.parseDouble(request.getParameter("price"));  // Change to double
-        int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
-        int categoryid = Integer.parseInt(request.getParameter("categoryid"));
 
-        boolean success = ProductDbImp.addProduct(name, description, price, stockQuantity, categoryid);
+        // Add null checks
+        String priceParam = request.getParameter("price");
+        String stockQuantityParam = request.getParameter("stockQuantity");
+        String categoryParam = request.getParameter("category");
 
-        if (success) {
-            response.sendRedirect("admin?tab=products&success=Product added successfully");
-        } else {
-            response.sendRedirect("admin?tab=products&error=Failed to add product");
+        if (priceParam == null || priceParam.trim().isEmpty() ||
+                stockQuantityParam == null || stockQuantityParam.trim().isEmpty() ||
+                categoryParam == null || categoryParam.trim().isEmpty()) {
+            response.sendRedirect("admin?tab=products&error=All fields are required");
+            return;
+        }
+
+        try {
+            double price = Double.parseDouble(priceParam);
+            int stockQuantity = Integer.parseInt(stockQuantityParam);
+            int category = Integer.parseInt(categoryParam); // CHANGED from categoryid to category
+
+            boolean success = ProductDbImp.addProduct(name, description, price, stockQuantity, category);
+
+            if (success) {
+                response.sendRedirect("admin?tab=products&success=Product added successfully");
+            } else {
+                response.sendRedirect("admin?tab=products&error=Failed to add product");
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            response.sendRedirect("admin?tab=products&error=Invalid number format in price, stock, or category");
         }
     }
 
@@ -186,18 +204,37 @@ public class AdminServlet extends HttpServlet {
         int productId = Integer.parseInt(request.getParameter("productId"));
         String name = request.getParameter("name");
         String description = request.getParameter("description");
-        double price = Double.parseDouble(request.getParameter("price"));  // Change to double
-        int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
-        int categoryid = Integer.parseInt(request.getParameter("categoryid"));
 
-        boolean success = ProductDbImp.updateProduct(productId, name, description, price, stockQuantity, categoryid);
+        // Add null checks
+        String priceParam = request.getParameter("price");
+        String stockQuantityParam = request.getParameter("stockQuantity");
+        String categoryParam = request.getParameter("category"); // CHANGED from categoryid to category
 
-        if (success) {
-            response.sendRedirect("admin?tab=products&success=Product updated successfully");
-        } else {
-            response.sendRedirect("admin?tab=products&error=Failed to update product");
+        if (priceParam == null || priceParam.trim().isEmpty() ||
+                stockQuantityParam == null || stockQuantityParam.trim().isEmpty() ||
+                categoryParam == null || categoryParam.trim().isEmpty()) {
+            response.sendRedirect("admin?tab=products&error=All fields are required");
+            return;
+        }
+
+        try {
+            double price = Double.parseDouble(priceParam);
+            int stockQuantity = Integer.parseInt(stockQuantityParam);
+            int category = Integer.parseInt(categoryParam); // CHANGED from categoryid to category
+
+            boolean success = ProductDbImp.updateProduct(productId, name, description, price, stockQuantity, category);
+
+            if (success) {
+                response.sendRedirect("admin?tab=products&success=Product updated successfully");
+            } else {
+                response.sendRedirect("admin?tab=products&error=Failed to update product");
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            response.sendRedirect("admin?tab=products&error=Invalid number format in price, stock, or category");
         }
     }
+
 
 
     private void handleDeleteProduct(HttpServletRequest request, HttpServletResponse response)

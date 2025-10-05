@@ -20,8 +20,6 @@ public class OrderInfo {
         this.status = status;
     }
 
-    public int getId() {
-        return id;
 =======
     public OrderInfo(int id, int userId, String userEmail, String status, BigDecimal totalAmount, Timestamp orderDate) {
         this.id = id;

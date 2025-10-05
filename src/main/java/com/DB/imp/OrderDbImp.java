@@ -8,12 +8,10 @@ import java.sql.*;
 =======
 >>>>>>> Stashed changes
 
-import com.UI.Info.OrderInfo;
+
 import com.UI.Info.OrderItemInfo;
-import com.DB.supa;
 
 import java.sql.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -97,7 +97,7 @@ public class ProductDbImp {
 
         try {
             pstmt = conn.prepareStatement(
-                    "SELECT id, name, description, price, stock_quantity, categoryid FROM product WHERE id = ?"
+                    "SELECT id, name, description, price, stock, categoryid FROM product WHERE id = ?"
             );
             pstmt.setInt(1, productId);
             rs = pstmt.executeQuery();
@@ -108,7 +108,7 @@ public class ProductDbImp {
                         rs.getString("name"),
                         rs.getString("description"),
                         rs.getDouble("price"),
-                        rs.getInt("stock_quantity"),
+                        rs.getInt("stock"),
                         rs.getInt("categoryid")
                 );
             }
