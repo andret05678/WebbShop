@@ -1,14 +1,57 @@
 package com.DB.imp;
+<<<<<<< Updated upstream
 import com.BO.Order;
 import com.DB.supa;
 import com.UI.Info.OrderInfo;
 
 import java.sql.*;
+=======
+>>>>>>> Stashed changes
 
-public class OrderDbImp extends Order {
+import com.UI.Info.OrderInfo;
+import com.UI.Info.OrderItemInfo;
+import com.DB.supa;
 
-    private OrderDbImp(int id, int userId, String status) {
-        super(id, userId, status);
+import java.sql.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OrderDbImp {
+
+    public static List<OrderInfo> getAllOrders() throws SQLException {
+        List<OrderInfo> orders = new ArrayList<>();
+        Connection conn = supa.getConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(
+                "SELECT o.id, o.user_id, u.email, o.status, o.total_amount, o.order_date " +
+                        "FROM orders o " +
+                        "JOIN users u ON o.user_id = u.id " +
+                        "ORDER BY o.order_date DESC"
+        );
+
+        while (rs.next()) {
+            OrderInfo order = new OrderInfo(
+                    rs.getInt("id"),
+                    rs.getInt("user_id"),
+                    rs.getString("email"),
+                    rs.getString("status"),
+                    rs.getBigDecimal("total_amount"),
+                    rs.getTimestamp("order_date")
+            );
+
+            // Get order items
+            List<OrderItemInfo> items = getOrderItems(order.getId());
+            order.setItems(items);
+
+            orders.add(order);
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        return orders;
     }
     public static Order findById(int id) throws SQLException {
         Connection conn = supa.getConnection();
@@ -35,5 +78,50 @@ public class OrderDbImp extends Order {
 
     }
 
+    private static List<OrderItemInfo> getOrderItems(int orderId) throws SQLException {
+        List<OrderItemInfo> items = new ArrayList<>();
+        Connection conn = supa.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(
+                "SELECT oi.id, oi.order_id, oi.product_id, p.name, oi.quantity, oi.price " +
+                        "FROM order_item oi " +
+                        "JOIN product p ON oi.product_id = p.id " +
+                        "WHERE oi.order_id = ?"
+        );
 
+        pstmt.setInt(1, orderId);
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            OrderItemInfo item = new OrderItemInfo(
+                    rs.getInt("id"),
+                    rs.getInt("order_id"),
+                    rs.getInt("product_id"),
+                    rs.getString("name"),
+                    rs.getInt("quantity"),
+                    rs.getDouble("price")
+            );
+            items.add(item);
+        }
+
+        rs.close();
+        pstmt.close();
+        conn.close();
+
+        return items;
+    }
+
+    public static boolean updateOrderStatus(int orderId, String newStatus) throws SQLException {
+        Connection conn = supa.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement("UPDATE orders SET status = ? WHERE id = ?");
+
+        pstmt.setString(1, newStatus);
+        pstmt.setInt(2, orderId);
+
+        int rowsAffected = pstmt.executeUpdate();
+
+        pstmt.close();
+        conn.close();
+
+        return rowsAffected > 0;
+    }
 }

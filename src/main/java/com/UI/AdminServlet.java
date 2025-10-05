@@ -3,12 +3,17 @@ package com.UI;
 import com.BO.Services.UserServices;
 import com.BO.User;
 import com.UI.Info.UserInfo;
+import com.UI.Info.ProductInfo;
+import com.UI.Info.OrderInfo;
 import com.DB.imp.UserDbImp;
+import com.DB.imp.ProductDbImp;
+import com.DB.imp.OrderDbImp;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -33,15 +38,31 @@ public class AdminServlet extends HttpServlet {
             return;
         }
 
-        try {
-            // Get all users for display
-            List<User> allUsers = UserDbImp.getAllUsers();
-            request.setAttribute("allUsers", allUsers);
+        String tab = request.getParameter("tab");
+        if (tab == null) tab = "users";
 
+        try {
+            switch (tab) {
+                case "users":
+                    List<User> allUsers = UserDbImp.getAllUsers();
+                    request.setAttribute("allUsers", allUsers);
+                    break;
+                case "products":
+                    List<ProductInfo> allProducts = ProductDbImp.getAllProducts();
+                    request.setAttribute("allProducts", allProducts);
+                    break;
+                case "orders":
+                    List<OrderInfo> allOrders = OrderDbImp.getAllOrders();
+                    request.setAttribute("allOrders", allOrders);
+                    break;
+            }
+
+            request.setAttribute("currentTab", tab);
             request.getRequestDispatcher("/adminpage.jsp").forward(request, response);
+
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("admin?error=Unable to load users");
+            response.sendRedirect("admin?error=Unable to load data");
         }
     }
 
@@ -58,6 +79,8 @@ public class AdminServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
+        String tab = request.getParameter("tab");
+        if (tab == null) tab = "users";
 
         try {
             switch (action) {
@@ -70,15 +93,28 @@ public class AdminServlet extends HttpServlet {
                 case "deleteUser":
                     handleDeleteUser(request, response);
                     break;
+                case "addProduct":
+                    handleAddProduct(request, response);
+                    break;
+                case "editProduct":
+                    handleEditProduct(request, response);
+                    break;
+                case "deleteProduct":
+                    handleDeleteProduct(request, response);
+                    break;
+                case "updateOrderStatus":
+                    handleUpdateOrderStatus(request, response);
+                    break;
                 default:
-                    response.sendRedirect("admin?error=Invalid action");
+                    response.sendRedirect("admin?tab=" + tab + "&error=Invalid action");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("admin?error=Operation failed");
+            response.sendRedirect("admin?tab=" + tab + "&error=Operation failed");
         }
     }
 
+    // Existing user methods...
     private void handleAddUser(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String email = request.getParameter("email");
@@ -86,13 +122,12 @@ public class AdminServlet extends HttpServlet {
         String password = request.getParameter("password");
         int roleId = Integer.parseInt(request.getParameter("roleId"));
 
-        // Use your existing registration service
         UserInfo newUser = userServices.register(email, password, username, roleId);
 
         if (newUser != null) {
-            response.sendRedirect("admin?success=User added successfully");
+            response.sendRedirect("admin?tab=users&success=User added successfully");
         } else {
-            response.sendRedirect("admin?error=Failed to add user - email may already exist");
+            response.sendRedirect("admin?tab=users&error=Failed to add user");
         }
     }
 
@@ -104,9 +139,9 @@ public class AdminServlet extends HttpServlet {
         boolean success = UserDbImp.updateUserRole(userId, newRoleId);
 
         if (success) {
-            response.sendRedirect("admin?success=User role updated successfully");
+            response.sendRedirect("admin?tab=users&success=User role updated successfully");
         } else {
-            response.sendRedirect("admin?error=Failed to update user role");
+            response.sendRedirect("admin?tab=users&error=Failed to update user role");
         }
     }
 
@@ -114,20 +149,82 @@ public class AdminServlet extends HttpServlet {
             throws ServletException, IOException, SQLException {
         int userId = Integer.parseInt(request.getParameter("userId"));
 
-        // Prevent admin from deleting themselves
         UserInfo currentUser = (UserInfo) request.getSession().getAttribute("userInfo");
         if (userId == currentUser.getId()) {
-            response.sendRedirect("admin?error=Cannot delete your own account");
+            response.sendRedirect("admin?tab=users&error=Cannot delete your own account");
             return;
         }
 
         boolean success = UserDbImp.deleteUser(userId);
 
         if (success) {
-            response.sendRedirect("admin?success=User deleted successfully");
+            response.sendRedirect("admin?tab=users&success=User deleted successfully");
         } else {
-            response.sendRedirect("admin?error=Failed to delete user");
+            response.sendRedirect("admin?tab=users&error=Failed to delete user");
         }
     }
 
+    private void handleAddProduct(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException {
+        String name = request.getParameter("name");
+        String description = request.getParameter("description");
+        double price = Double.parseDouble(request.getParameter("price"));  // Change to double
+        int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
+        int categoryid = Integer.parseInt(request.getParameter("categoryid"));
+
+        boolean success = ProductDbImp.addProduct(name, description, price, stockQuantity, categoryid);
+
+        if (success) {
+            response.sendRedirect("admin?tab=products&success=Product added successfully");
+        } else {
+            response.sendRedirect("admin?tab=products&error=Failed to add product");
+        }
+    }
+
+    private void handleEditProduct(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException {
+        int productId = Integer.parseInt(request.getParameter("productId"));
+        String name = request.getParameter("name");
+        String description = request.getParameter("description");
+        double price = Double.parseDouble(request.getParameter("price"));  // Change to double
+        int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
+        int categoryid = Integer.parseInt(request.getParameter("categoryid"));
+
+        boolean success = ProductDbImp.updateProduct(productId, name, description, price, stockQuantity, categoryid);
+
+        if (success) {
+            response.sendRedirect("admin?tab=products&success=Product updated successfully");
+        } else {
+            response.sendRedirect("admin?tab=products&error=Failed to update product");
+        }
+    }
+
+
+    private void handleDeleteProduct(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException {
+        int productId = Integer.parseInt(request.getParameter("productId"));
+
+        boolean success = ProductDbImp.deleteProduct(productId);
+
+        if (success) {
+            response.sendRedirect("admin?tab=products&success=Product deleted successfully");
+        } else {
+            response.sendRedirect("admin?tab=products&error=Failed to delete product");
+        }
+    }
+
+    // Order methods
+    private void handleUpdateOrderStatus(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException {
+        int orderId = Integer.parseInt(request.getParameter("orderId"));
+        String newStatus = request.getParameter("newStatus");
+
+        boolean success = OrderDbImp.updateOrderStatus(orderId, newStatus);
+
+        if (success) {
+            response.sendRedirect("admin?tab=orders&success=Order status updated successfully");
+        } else {
+            response.sendRedirect("admin?tab=orders&error=Failed to update order status");
+        }
+    }
 }
