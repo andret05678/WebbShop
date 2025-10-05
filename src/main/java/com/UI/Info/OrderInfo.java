@@ -13,14 +13,12 @@ public class OrderInfo {
     private Timestamp orderDate;
     private List<OrderItemInfo> items;
 
-<<<<<<< Updated upstream
     public OrderInfo(int id, int userId, String status) {
         this.id = id;
         this.userId = userId;
         this.status = status;
     }
 
-=======
     public OrderInfo(int id, int userId, String userEmail, String status, BigDecimal totalAmount, Timestamp orderDate) {
         this.id = id;
         this.userId = userId;
@@ -28,7 +26,6 @@ public class OrderInfo {
         this.status = status;
         this.totalAmount = totalAmount;
         this.orderDate = orderDate;
->>>>>>> Stashed changes
     }
 
     // Getters

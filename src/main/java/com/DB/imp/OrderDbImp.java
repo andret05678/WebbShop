@@ -1,12 +1,10 @@
 package com.DB.imp;
-<<<<<<< Updated upstream
 import com.BO.Order;
 import com.DB.supa;
 import com.UI.Info.OrderInfo;
 
 import java.sql.*;
-=======
->>>>>>> Stashed changes
+
 
 
 import com.UI.Info.OrderItemInfo;
