@@ -19,6 +19,10 @@ public class Product {
         this.categoryId = categoryId;
     }
 
+    public static Product createProduct(int id, String name, String description, double price, int stock, int categoryId) {
+        return new Product(id, name, description, price, stock, categoryId);
+    }
+
     public int getId() { return id; }
 
     public void setId(int id) { this.id = id; }
