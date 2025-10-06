@@ -3,20 +3,19 @@
 <%@ page import="com.UI.Info.ProductInfo" %>
 <%@ page import="com.UI.Info.OrderInfo" %>
 <%@ page import="java.util.List" %>
-<%@ page import="com.BO.User" %>
 <%
-    // Check if user is logged in and is admin
+    // Check if user is logged in and is staff (role 2) or admin (role 3)
     UserInfo userInfo = (UserInfo) session.getAttribute("userInfo");
-    if (userInfo == null || userInfo.getRole() != 3) {
+    if (userInfo == null || (userInfo.getRole() != 2 && userInfo.getRole() != 3)) {
         response.sendRedirect("login");
         return;
     }
 
-    List<User> allUsers = (List<User>) request.getAttribute("allUsers");
-    List<ProductInfo> allProducts = (List<ProductInfo>) request.getAttribute("allProducts");
     List<OrderInfo> allOrders = (List<OrderInfo>) request.getAttribute("allOrders");
+    List<ProductInfo> allProducts = (List<ProductInfo>) request.getAttribute("allProducts");
+    List<ProductInfo> lowStockProducts = (List<ProductInfo>) request.getAttribute("lowStockProducts");
     String currentTab = (String) request.getAttribute("currentTab");
-    if (currentTab == null) currentTab = "users";
+    if (currentTab == null) currentTab = "orders";
 
     String success = request.getParameter("success");
     String error = request.getParameter("error");
@@ -30,40 +29,41 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .tabs { margin-bottom: 20px; }
         .tab { padding: 10px 20px; background: #e9ecef; border: none; cursor: pointer; margin-right: 5px; }
-        .tab.active { background: #007bff; color: white; }
+        .tab.active { background: #17a2b8; color: white; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background-color: #f8f9fa; font-weight: bold; }
         .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin: 2px; }
-        .btn-edit { background: #ffc107; color: black; }
-        .btn-delete { background: #dc3545; color: white; }
-        .btn-save { background: #28a745; color: white; }
         .btn-update { background: #17a2b8; color: white; }
-        .role-customer { color: #17a2b8; }
-        .role-staff { color: #fd7e14; }
-        .role-admin { color: #dc3545; font-weight: bold; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
         .status-pending { color: #ffc107; font-weight: bold; }
         .status-processing { color: #17a2b8; font-weight: bold; }
         .status-completed { color: #28a745; font-weight: bold; }
         .status-cancelled { color: #dc3545; font-weight: bold; }
+        .stock-low { color: #dc3545; font-weight: bold; background: #f8d7da; padding: 4px 8px; border-radius: 4px; }
+        .stock-medium { color: #ffc107; font-weight: bold; }
+        .stock-good { color: #28a745; font-weight: bold; }
         .success { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: end; }
-        .form-group { flex: 1; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .alert-warning { color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ffeaa7; }
         .order-items { background: #f8f9fa; padding: 10px; border-radius: 4px; margin-top: 5px; }
         .order-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #dee2e6; }
         .order-item:last-child { border-bottom: none; }
+        .form-inline { display: inline; }
+        .form-inline input, .form-inline select { padding: 4px; margin: 0 5px; border: 1px solid #ddd; border-radius: 4px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h1>Admin Dashboard</h1>
+        <h1>Staff Dashboard</h1>
         <div>
-            <span>Welcome, <%= userInfo.getUsername() %> (Admin)</span> |
+            <span>Welcome, <%= userInfo.getUsername() %> (<%= userInfo.getRole() == 2 ? "Staff" : "Admin" %>)</span> |
             <a href="testpage">Store Front</a> |
+            <% if (userInfo.getRole() == 3) { %>
+            <a href="admin">Admin Panel</a> |
+            <% } %>
             <a href="logout">Logout</a>
         </div>
     </div>
@@ -76,21 +76,21 @@
     <% } %>
 
     <div class="tabs">
-        <button class="tab <%= "users".equals(currentTab) ? "active" : "" %>" onclick="showTab('users')">User Management</button>
-        <button class="tab <%= "products".equals(currentTab) ? "active" : "" %>" onclick="showTab('products')">Product Management</button>
         <button class="tab <%= "orders".equals(currentTab) ? "active" : "" %>" onclick="showTab('orders')">Order Management</button>
+        <button class="tab <%= "products".equals(currentTab) ? "active" : "" %>" onclick="showTab('products')">Product Inventory</button>
+        <button class="tab <%= "inventory".equals(currentTab) ? "active" : "" %>" onclick="showTab('inventory')">Low Stock Alerts</button>
     </div>
 
     <!-- Order Management Tab -->
     <div id="orders-tab" class="tab-content" style="display: <%= "orders".equals(currentTab) ? "block" : "none" %>;">
         <h2>Order Management</h2>
 
-        <!-- Orders List -->
+        <% if (allOrders != null && !allOrders.isEmpty()) { %>
         <table>
             <thead>
             <tr>
                 <th>Order ID</th>
-                <th>User Email</th>
+                <th>Customer Email</th>
                 <th>Status</th>
                 <th>Total Amount</th>
                 <th>Order Date</th>
@@ -99,22 +99,21 @@
             </tr>
             </thead>
             <tbody>
-            <% if (allOrders != null && !allOrders.isEmpty()) {
-                for (OrderInfo order : allOrders) {
-                    String statusClass = "";
-                    switch(order.getStatus().toLowerCase()) {
-                        case "pending": statusClass = "status-pending"; break;
-                        case "processing": statusClass = "status-processing"; break;
-                        case "completed": statusClass = "status-completed"; break;
-                        case "cancelled": statusClass = "status-cancelled"; break;
-                        default: statusClass = "status-pending";
-                    }
+            <% for (OrderInfo order : allOrders) {
+                String statusClass = "";
+                switch(order.getStatus().toLowerCase()) {
+                    case "pending": statusClass = "status-pending"; break;
+                    case "processing": statusClass = "status-processing"; break;
+                    case "completed": statusClass = "status-completed"; break;
+                    case "cancelled": statusClass = "status-cancelled"; break;
+                    default: statusClass = "status-pending";
+                }
             %>
             <tr>
                 <td><%= order.getId() %></td>
                 <td><%= order.getUserEmail() %></td>
                 <td><span class="<%= statusClass %>"><%= order.getStatus() %></span></td>
-                <td>$<%= order.getTotalAmount() %></td>
+                <td>$<%= String.format("%.2f", order.getTotalAmount()) %></td>
                 <td><%= order.getOrderDate() %></td>
                 <td>
                     <div class="order-items">
@@ -123,7 +122,7 @@
                         <div class="order-item">
                             <span><%= item.getProductName() %></span>
                             <span>Qty: <%= item.getQuantity() %></span>
-                            <span>$<%= item.getPrice() %></span>
+                            <span>$<%= String.format("%.2f", item.getPrice()) %></span>
                         </div>
                         <% }
                         } else { %>
@@ -132,28 +131,142 @@
                     </div>
                 </td>
                 <td>
-                    <form action="admin" method="post" style="display: inline;">
+                    <form class="form-inline" action="staffpage" method="post">
                         <input type="hidden" name="action" value="updateOrderStatus">
                         <input type="hidden" name="tab" value="orders">
                         <input type="hidden" name="orderId" value="<%= order.getId() %>">
-                        <select name="newStatus" style="padding: 4px;">
+                        <select name="newStatus">
                             <option value="pending" <%= "pending".equalsIgnoreCase(order.getStatus()) ? "selected" : "" %>>Pending</option>
                             <option value="processing" <%= "processing".equalsIgnoreCase(order.getStatus()) ? "selected" : "" %>>Processing</option>
                             <option value="completed" <%= "completed".equalsIgnoreCase(order.getStatus()) ? "selected" : "" %>>Completed</option>
                             <option value="cancelled" <%= "cancelled".equalsIgnoreCase(order.getStatus()) ? "selected" : "" %>>Cancelled</option>
                         </select>
-                        <button type="submit" class="btn btn-update">Update Status</button>
+                        <button type="submit" class="btn btn-update">Update</button>
                     </form>
                 </td>
-            </tr>
-            <% }
-            } else { %>
-            <tr>
-                <td colspan="7" style="text-align: center;">No orders found</td>
             </tr>
             <% } %>
             </tbody>
         </table>
+        <% } else { %>
+        <p>No orders found.</p>
+        <% } %>
+    </div>
+
+    <!-- Product Inventory Tab -->
+    <div id="products-tab" class="tab-content" style="display: <%= "products".equals(currentTab) ? "block" : "none" %>;">
+        <h2>Product Inventory Management</h2>
+
+        <% if (allProducts != null && !allProducts.isEmpty()) { %>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Category ID</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% for (ProductInfo product : allProducts) {
+                String stockClass = "";
+                if (product.getStock() < 5) {
+                    stockClass = "stock-low";
+                } else if (product.getStock() < 10) {
+                    stockClass = "stock-medium";
+                } else {
+                    stockClass = "stock-good";
+                }
+            %>
+            <tr>
+                <td><%= product.getId() %></td>
+                <td><%= product.getName() %></td>
+                <td><%= product.getDescription() %></td>
+                <td>$<%= String.format("%.2f", product.getPrice()) %></td>
+                <td><span class="<%= stockClass %>"><%= product.getStock() %></span></td>
+                <td><%= product.getCategoryId() %></td>
+                <td>
+                    <!-- Quick Stock Update -->
+                    <form class="form-inline" action="staffpage" method="post" style="margin-bottom: 5px;">
+                        <input type="hidden" name="action" value="updateProductStock">
+                        <input type="hidden" name="tab" value="products">
+                        <input type="hidden" name="productId" value="<%= product.getId() %>">
+                        <input type="number" name="newStock" value="<%= product.getStock() %>" min="0" style="width: 80px;">
+                        <button type="submit" class="btn btn-update">Update Stock</button>
+                    </form>
+
+                    <!-- Full Product Edit -->
+                    <form class="form-inline" action="staffpage" method="post">
+                        <input type="hidden" name="action" value="updateProduct">
+                        <input type="hidden" name="tab" value="products">
+                        <input type="hidden" name="productId" value="<%= product.getId() %>">
+                        <input type="text" name="name" value="<%= product.getName() %>" style="width: 120px;" placeholder="Name" required>
+                        <input type="text" name="description" value="<%= product.getDescription() %>" style="width: 150px;" placeholder="Description" required>
+                        <input type="number" name="price" step="0.01" value="<%= product.getPrice() %>" style="width: 80px;" placeholder="Price" required>
+                        <input type="number" name="stock" value="<%= product.getStock() %>" style="width: 60px;" placeholder="Stock" required>
+                        <button type="submit" class="btn btn-save">Save</button>
+                    </form>
+                </td>
+            </tr>
+            <% } %>
+            </tbody>
+        </table>
+        <% } else { %>
+        <p>No products found.</p>
+        <% } %>
+    </div>
+
+    <!-- Low Stock Alerts Tab -->
+    <div id="inventory-tab" class="tab-content" style="display: <%= "inventory".equals(currentTab) ? "block" : "none" %>;">
+        <h2>Low Stock Alerts</h2>
+
+        <% if (lowStockProducts != null && !lowStockProducts.isEmpty()) { %>
+        <div class="alert-warning">
+            <strong>Warning:</strong> <%= lowStockProducts.size() %> product(s) are running low on stock!
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Current Stock</th>
+                <th>Category ID</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% for (ProductInfo product : lowStockProducts) { %>
+            <tr>
+                <td><%= product.getId() %></td>
+                <td><strong><%= product.getName() %></strong></td>
+                <td><%= product.getDescription() %></td>
+                <td>$<%= String.format("%.2f", product.getPrice()) %></td>
+                <td><span class="stock-low"><%= product.getStock() %> (LOW)</span></td>
+                <td><%= product.getCategoryId() %></td>
+                <td>
+                    <form class="form-inline" action="staffpage" method="post">
+                        <input type="hidden" name="action" value="updateProductStock">
+                        <input type="hidden" name="tab" value="inventory">
+                        <input type="hidden" name="productId" value="<%= product.getId() %>">
+                        <input type="number" name="newStock" value="<%= product.getStock() + 20 %>" min="<%= product.getStock() + 1 %>" style="width: 80px;">
+                        <button type="submit" class="btn btn-warning">Restock</button>
+                    </form>
+                </td>
+            </tr>
+            <% } %>
+            </tbody>
+        </table>
+        <% } else { %>
+        <div class="success">
+            <strong>Great news!</strong> All products have sufficient stock levels.
+        </div>
+        <% } %>
     </div>
 </div>
 
