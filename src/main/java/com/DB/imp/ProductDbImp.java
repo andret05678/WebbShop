@@ -194,7 +194,7 @@ public class ProductDbImp {
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, productId);
             ResultSet rs = pstmt.executeQuery();
-            return rs.next(); // Returns true if product exists and has stock > 0
+            return rs.next();
         }
     }
     public static void updateProductStock( int productId) throws SQLException {

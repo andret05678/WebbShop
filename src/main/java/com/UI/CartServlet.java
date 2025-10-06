@@ -1,7 +1,6 @@
 package com.UI;
 
 import com.BO.Services.OrderServices;
-import com.DB.supa;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import java.io.IOException;

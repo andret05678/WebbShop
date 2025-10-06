@@ -37,7 +37,6 @@ public class OrderDbImp {
                     rs.getTimestamp("order_date")
             );
 
-            // Get order items
             List<OrderItemInfo> items = getOrderItems(order.getId());
             order.setItems(items);
 
