@@ -1,5 +1,7 @@
 package com.UI;
 
+import com.BO.Services.OrderServices;
+import com.DB.supa;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import java.io.IOException;
@@ -156,49 +158,39 @@ public class CartServlet extends HttpServlet {
 
         Connection conn = null;
         try {
-            // Get database connection
             Class.forName("org.postgresql.Driver");
             String url = "jdbc:postgresql://aws-1-eu-north-1.pooler.supabase.com:5432/postgres?user=postgres.yibhllavyovhbjaxwynu&password=Anton056780990";
             conn = DriverManager.getConnection(url);
 
-            // Start transaction
             conn.setAutoCommit(false);
 
-            // Calculate total amount
             double totalAmount = 0.0;
             for (Map<String, String> item : cart) {
                 totalAmount += Double.parseDouble(item.get("price"));
             }
 
-            // 1. Check stock availability for all items
             for (Map<String, String> item : cart) {
                 int productId = Integer.parseInt(item.get("id"));
-                if (!isProductInStock(conn, productId)) {
+                if (!OrderServices.isProductInStock(productId)) {
                     conn.rollback();
                     resp.sendRedirect("cart?error=Product " + item.get("name") + " is out of stock");
                     return;
                 }
             }
 
-            // 2. Insert order
-            int orderId = insertOrder(conn, userId, totalAmount);
+            int orderId = OrderServices.insertOrder(conn, userId, totalAmount);
 
-            // 3. Insert order items and update stock
             for (Map<String, String> item : cart) {
                 int productId = Integer.parseInt(item.get("id"));
                 double price = Double.parseDouble(item.get("price"));
 
-                // Insert order item
-                insertOrderItem(conn, orderId, productId, price);
+                OrderServices.insertOrderItem(orderId, productId, price);
 
-                // Update product stock (decrement by 1)
-                updateProductStock(conn, productId);
+                OrderServices.updateProductStock(productId);
             }
 
-            // Commit transaction
             conn.commit();
 
-            // Clear cart
             session.removeAttribute("cart");
 
             resp.sendRedirect("cart?success=Order placed successfully! Order ID: " + orderId);
@@ -221,49 +213,6 @@ public class CartServlet extends HttpServlet {
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-            }
-        }
-    }
-
-    private boolean isProductInStock(Connection conn, int productId) throws SQLException {
-        String sql = "SELECT stock FROM product WHERE id = ? AND stock > 0";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, productId);
-            ResultSet rs = pstmt.executeQuery();
-            return rs.next(); // Returns true if product exists and has stock > 0
-        }
-    }
-
-    private int insertOrder(Connection conn, int userId, double totalAmount) throws SQLException {
-        String sql = "INSERT INTO orders (user_id, total_amount, status, order_date) VALUES (?, ?, 'pending', NOW()) RETURNING id";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, userId);
-            pstmt.setDouble(2, totalAmount);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            throw new SQLException("Failed to get order ID");
-        }
-    }
-
-    private void insertOrderItem(Connection conn, int orderId, int productId, double price) throws SQLException {
-        String sql = "INSERT INTO order_item (order_id, product_id, quantity, price) VALUES (?, ?, 1, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, orderId);
-            pstmt.setInt(2, productId);
-            pstmt.setDouble(3, price);
-            pstmt.executeUpdate();
-        }
-    }
-
-    private void updateProductStock(Connection conn, int productId) throws SQLException {
-        String sql = "UPDATE product SET stock = stock - 1 WHERE id = ? AND stock > 0";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, productId);
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected == 0) {
-                throw new SQLException("Failed to update stock for product ID: " + productId);
             }
         }
     }

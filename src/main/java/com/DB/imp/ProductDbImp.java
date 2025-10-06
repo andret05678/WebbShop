@@ -188,4 +188,24 @@ public class ProductDbImp {
 
         return rowsAffected > 0;
     }
+    public static boolean isProductInStock(int productId) throws SQLException {
+        Connection conn = supa.getConnection();
+        String sql = "SELECT stock FROM product WHERE id = ? AND stock > 0";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, productId);
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next(); // Returns true if product exists and has stock > 0
+        }
+    }
+    public static void updateProductStock( int productId) throws SQLException {
+        Connection conn = supa.getConnection();
+        String sql = "UPDATE product SET stock = stock - 1 WHERE id = ? AND stock > 0";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, productId);
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("Failed to update stock for product ID: " + productId);
+            }
+        }
+    }
 }

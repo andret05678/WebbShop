@@ -147,6 +147,31 @@ public class OrderDbImp {
         return rowsAffected > 0;
     }
 
+
+    public static int insertOrder(Connection conn, int userId, double totalAmount) throws SQLException {
+        String sql = "INSERT INTO orders (user_id, total_amount, status, order_date) VALUES (?, ?, 'pending', NOW()) RETURNING id";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            pstmt.setDouble(2, totalAmount);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            throw new SQLException("Failed to get order ID");
+        }
+    }
+
+    public static void insertOrderItem(int orderId, int productId, double price) throws SQLException {
+        Connection conn = supa.getConnection();
+        String sql = "INSERT INTO order_item (order_id, product_id, quantity, price) VALUES (?, ?, 1, ?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, orderId);
+            pstmt.setInt(2, productId);
+            pstmt.setDouble(3, price);
+            pstmt.executeUpdate();
+        }
+    }
+
     public static boolean updateProductBasicInfo(int productId, String name, String description, double price, int stock) throws SQLException {
         Connection conn = supa.getConnection();
         PreparedStatement pstmt = conn.prepareStatement(
