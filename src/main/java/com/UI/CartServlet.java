@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.sql.*;
 
 public class CartServlet extends HttpServlet {
 
@@ -15,7 +16,6 @@ public class CartServlet extends HttpServlet {
         HttpSession session = req.getSession();
 
         if (session.getAttribute("userInfo") == null) {
-            System.out.println("No userInfo found - redirecting to login");
             resp.sendRedirect("login");
             return;
         }
@@ -32,15 +32,15 @@ public class CartServlet extends HttpServlet {
             item.put("name", req.getParameter("name"));
             item.put("price", req.getParameter("price"));
             cart.add(item);
-            System.out.println("Added item to cart: " + item);
         } else if ("remove".equals(action)) {
             String idToRemove = req.getParameter("id");
             cart.removeIf(p -> p.get("id").equals(idToRemove));
-            System.out.println("Removed item from cart: " + idToRemove);
+        } else if ("placeOrder".equals(action)) {
+            handlePlaceOrder(req, resp, session, cart);
+            return; // Return early since handlePlaceOrder handles the response
         }
 
         session.setAttribute("cart", cart);
-        System.out.println("Cart size: " + cart.size());
         resp.sendRedirect("cart");
     }
 
@@ -51,7 +51,6 @@ public class CartServlet extends HttpServlet {
         HttpSession session = req.getSession();
 
         if (session.getAttribute("userInfo") == null) {
-            System.out.println("No userInfo found - redirecting to login");
             resp.sendRedirect("login");
             return;
         }
@@ -63,17 +62,36 @@ public class CartServlet extends HttpServlet {
 
         out.println("<html><head><title>Shopping Cart</title>");
         out.println("<style>");
-        out.println("body { font-family: Arial, sans-serif; background: #f5f5f5; }");
-        out.println("h2 { text-align: center; }");
-        out.println("table { width: 70%; margin: auto; border-collapse: collapse; background: white; }");
+        out.println("body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 20px; }");
+        out.println(".container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }");
+        out.println("h2 { text-align: center; color: #333; }");
+        out.println("table { width: 100%; border-collapse: collapse; background: white; margin: 20px 0; }");
         out.println("th, td { padding: 12px; text-align: center; border: 1px solid #ddd; }");
         out.println("th { background: #28a745; color: white; }");
         out.println("tr:nth-child(even) { background: #f9f9f9; }");
-        out.println(".btn-remove { background: #dc3545; color: white; padding: 6px 12px; border: none; cursor: pointer; border-radius: 4px; }");
+        out.println(".btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }");
+        out.println(".btn-remove { background: #dc3545; color: white; }");
         out.println(".btn-remove:hover { background: #c82333; }");
+        out.println(".btn-order { background: #007bff; color: white; font-size: 16px; padding: 12px 24px; }");
+        out.println(".btn-order:hover { background: #0056b3; }");
+        out.println(".btn-order:disabled { background: #6c757d; cursor: not-allowed; }");
+        out.println(".success { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0; }");
+        out.println(".error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; }");
         out.println("</style></head><body>");
 
-        out.println("<h2>Your Cart</h2>");
+        out.println("<div class='container'>");
+
+        // Display messages from order placement
+        String success = req.getParameter("success");
+        String error = req.getParameter("error");
+        if (success != null) {
+            out.println("<div class='success'>" + success + "</div>");
+        }
+        if (error != null) {
+            out.println("<div class='error'>" + error + "</div>");
+        }
+
+        out.println("<h2>Your Shopping Cart</h2>");
 
         String username = (String) session.getAttribute("username");
         if (username != null) {
@@ -81,7 +99,7 @@ public class CartServlet extends HttpServlet {
             out.println("<a href='logout'>Logout</a></p>");
         }
 
-        out.println("<a href='testpage'>Back to Store</a><br><br>");
+        out.println("<a href='testpage' class='btn' style='background: #6c757d; color: white;'>← Back to Store</a><br><br>");
 
         if (cart.isEmpty()) {
             out.println("<p style='text-align:center;'>Your cart is empty.</p>");
@@ -97,18 +115,156 @@ public class CartServlet extends HttpServlet {
                 out.println("<td>" + item.get("name") + "</td>");
                 out.println("<td>$" + item.get("price") + "</td>");
                 out.println("<td>");
-                out.println("<form method='post' action='cart'>");
+                out.println("<form method='post' action='cart' style='display: inline;'>");
                 out.println("<input type='hidden' name='id' value='" + item.get("id") + "'/>");
                 out.println("<input type='hidden' name='action' value='remove'/>");
-                out.println("<input type='submit' class='btn-remove' value='Remove'/>");
+                out.println("<button type='submit' class='btn btn-remove'>Remove</button>");
                 out.println("</form>");
                 out.println("</td>");
                 out.println("</tr>");
             }
-            out.println("<tr><td colspan='2'>Total</td><td colspan='2'>$" + String.format("%.2f", total) + "</td></tr>");
+            out.println("<tr style='font-weight: bold;'>");
+            out.println("<td colspan='2'>Total Amount</td>");
+            out.println("<td>$" + String.format("%.2f", total) + "</td>");
+            out.println("<td>");
+            out.println("<form method='post' action='cart'>");
+            out.println("<input type='hidden' name='action' value='placeOrder'/>");
+            out.println("<button type='submit' class='btn btn-order'>Place Order</button>");
+            out.println("</form>");
+            out.println("</td>");
+            out.println("</tr>");
             out.println("</table>");
         }
 
+        out.println("</div>");
         out.println("</body></html>");
+    }
+
+    private void handlePlaceOrder(HttpServletRequest req, HttpServletResponse resp, HttpSession session, List<Map<String, String>> cart)
+            throws ServletException, IOException {
+
+        if (cart == null || cart.isEmpty()) {
+            resp.sendRedirect("cart?error=Cart is empty");
+            return;
+        }
+
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            resp.sendRedirect("login");
+            return;
+        }
+
+        Connection conn = null;
+        try {
+            // Get database connection
+            Class.forName("org.postgresql.Driver");
+            String url = "jdbc:postgresql://aws-1-eu-north-1.pooler.supabase.com:5432/postgres?user=postgres.yibhllavyovhbjaxwynu&password=Anton056780990";
+            conn = DriverManager.getConnection(url);
+
+            // Start transaction
+            conn.setAutoCommit(false);
+
+            // Calculate total amount
+            double totalAmount = 0.0;
+            for (Map<String, String> item : cart) {
+                totalAmount += Double.parseDouble(item.get("price"));
+            }
+
+            // 1. Check stock availability for all items
+            for (Map<String, String> item : cart) {
+                int productId = Integer.parseInt(item.get("id"));
+                if (!isProductInStock(conn, productId)) {
+                    conn.rollback();
+                    resp.sendRedirect("cart?error=Product " + item.get("name") + " is out of stock");
+                    return;
+                }
+            }
+
+            // 2. Insert order
+            int orderId = insertOrder(conn, userId, totalAmount);
+
+            // 3. Insert order items and update stock
+            for (Map<String, String> item : cart) {
+                int productId = Integer.parseInt(item.get("id"));
+                double price = Double.parseDouble(item.get("price"));
+
+                // Insert order item
+                insertOrderItem(conn, orderId, productId, price);
+
+                // Update product stock (decrement by 1)
+                updateProductStock(conn, productId);
+            }
+
+            // Commit transaction
+            conn.commit();
+
+            // Clear cart
+            session.removeAttribute("cart");
+
+            resp.sendRedirect("cart?success=Order placed successfully! Order ID: " + orderId);
+
+        } catch (Exception e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+            resp.sendRedirect("cart?error=Failed to place order: " + e.getMessage());
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private boolean isProductInStock(Connection conn, int productId) throws SQLException {
+        String sql = "SELECT stock FROM product WHERE id = ? AND stock > 0";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, productId);
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next(); // Returns true if product exists and has stock > 0
+        }
+    }
+
+    private int insertOrder(Connection conn, int userId, double totalAmount) throws SQLException {
+        String sql = "INSERT INTO orders (user_id, total_amount, status, order_date) VALUES (?, ?, 'pending', NOW()) RETURNING id";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            pstmt.setDouble(2, totalAmount);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            throw new SQLException("Failed to get order ID");
+        }
+    }
+
+    private void insertOrderItem(Connection conn, int orderId, int productId, double price) throws SQLException {
+        String sql = "INSERT INTO order_item (order_id, product_id, quantity, price) VALUES (?, ?, 1, ?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, orderId);
+            pstmt.setInt(2, productId);
+            pstmt.setDouble(3, price);
+            pstmt.executeUpdate();
+        }
+    }
+
+    private void updateProductStock(Connection conn, int productId) throws SQLException {
+        String sql = "UPDATE product SET stock = stock - 1 WHERE id = ? AND stock > 0";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, productId);
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("Failed to update stock for product ID: " + productId);
+            }
+        }
     }
 }
