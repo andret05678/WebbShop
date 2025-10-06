@@ -1,6 +1,5 @@
 package com.BO;
 
-import com.DB.imp.ProductDbImp;
 
 public class Product {
     private int id;

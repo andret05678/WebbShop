@@ -56,7 +56,7 @@ public class LoginServlet extends HttpServlet {
                 response.sendRedirect("admin");
             }
             else if (userInfo.getRole() == 2) {
-                response.sendRedirect("stockmpage");
+                response.sendRedirect("staffpage");
             }
             else if (userInfo.getRole() == 1) {
                 response.sendRedirect("testpage");

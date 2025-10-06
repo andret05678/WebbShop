@@ -15,7 +15,6 @@ public class TestPageServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Check if user is logged in
         HttpSession session = req.getSession();
         UserInfo userInfo = (UserInfo) session.getAttribute("userInfo");
 
@@ -58,7 +57,6 @@ public class TestPageServlet extends HttpServlet {
             out.println(".user-info { background: #e9ecef; padding: 10px; border-radius: 4px; margin-bottom: 10px; }");
             out.println("</style></head><body>");
 
-            // Header with user info
             out.println("<div class='header'>");
             out.println("<h1>Welcome to the Store</h1>");
             out.println("<div>");
@@ -83,7 +81,6 @@ public class TestPageServlet extends HttpServlet {
             out.println("</div>");
             out.println("</div>");
 
-            // Get products from database
             stmt = conn.createStatement();
             rs = stmt.executeQuery("SELECT id, name, price FROM Product LIMIT 5");
 
@@ -124,7 +121,6 @@ public class TestPageServlet extends HttpServlet {
             out.println("<pre>" + e.getMessage() + "</pre>");
             e.printStackTrace();
         } finally {
-            // Close resources
             try {
                 if (rs != null) rs.close();
                 if (stmt != null) stmt.close();
@@ -138,7 +134,6 @@ public class TestPageServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // If you need to handle POST requests in the future
         doGet(req, resp);
     }
 }

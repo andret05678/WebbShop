@@ -59,7 +59,6 @@
 </div>
 
 <script>
-    // Toggle between login and registration forms
     document.getElementById('toggle-link').addEventListener('click', function(e) {
         e.preventDefault();
 

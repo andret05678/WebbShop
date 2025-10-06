@@ -22,7 +22,6 @@ public class UserDbImp extends User {
         Connection conn = supa.getConnection();
         Statement stmt = conn.createStatement();
 
-        // FIXED: Select all columns and use WHERE clause with proper table name
         String sql = "SELECT id, email, username, password, role_id FROM users WHERE email = '" + email + "'";
         ResultSet rs = stmt.executeQuery(sql);
 
@@ -38,11 +37,9 @@ public class UserDbImp extends User {
         return null;
     }
 
-    // Alternative: Using PreparedStatement (recommended)
     public static boolean insert(User user) throws SQLException {
         Connection conn = supa.getConnection();
 
-        // FIXED: Use PreparedStatement to prevent SQL injection
         String sql = "INSERT INTO users (email, username, password, role_id) VALUES (?, ?, ?, ?)";
         java.sql.PreparedStatement pstmt = conn.prepareStatement(sql);
 

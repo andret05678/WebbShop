@@ -16,7 +16,7 @@ public class UserServices {
         try {
             User existingUser = UserDbImp.findByEmail(email);
             if (existingUser != null) {
-                return null; // User already exists
+                return null;
             }
 
             String saltedHash = PasswordUtil.generateSaltedHash(password);
@@ -25,7 +25,6 @@ public class UserServices {
             boolean inserted = UserDbImp.insert(newUser);
 
             if (inserted) {
-                // Fetch the newly created user to get the actual ID
                 User createdUser = UserDbImp.findByEmail(email);
                 return new UserInfo(createdUser.getId(), createdUser.getUsername(), createdUser.getRoleId());
             }

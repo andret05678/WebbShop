@@ -4,7 +4,6 @@ import com.UI.Info.ProductInfo;
 import com.DB.supa;
 
 import java.sql.*;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -112,10 +111,9 @@ public class ProductDbImp {
                         rs.getInt("categoryid")
                 );
             }
-            return null; // Product not found
+            return null;
 
         } finally {
-            // Close resources in finally block to ensure they're always closed
             if (rs != null) {
                 try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
@@ -126,5 +124,68 @@ public class ProductDbImp {
                 try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
         }
+    }
+
+    public static List<ProductInfo> getLowStockProducts() throws SQLException {
+        List<ProductInfo> products = new ArrayList<>();
+        Connection conn = supa.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(
+                "SELECT id, name, description, price, stock, categoryid FROM product WHERE stock < 10 ORDER BY stock ASC"
+        );
+
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            ProductInfo product = new ProductInfo(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("description"),
+                    rs.getDouble("price"),
+                    rs.getInt("stock"),
+                    rs.getInt("categoryid")
+            );
+            products.add(product);
+        }
+
+        rs.close();
+        pstmt.close();
+        conn.close();
+
+        return products;
+    }
+
+    public static boolean updateProductStock(int productId, int newStock) throws SQLException {
+        Connection conn = supa.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement("UPDATE product SET stock = ? WHERE id = ?");
+
+        pstmt.setInt(1, newStock);
+        pstmt.setInt(2, productId);
+
+        int rowsAffected = pstmt.executeUpdate();
+
+        pstmt.close();
+        conn.close();
+
+        return rowsAffected > 0;
+    }
+
+    public static boolean updateProductBasicInfo(int productId, String name, String description, double price, int stock) throws SQLException {
+        Connection conn = supa.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(
+                "UPDATE product SET name = ?, description = ?, price = ?, stock = ? WHERE id = ?"
+        );
+
+        pstmt.setString(1, name);
+        pstmt.setString(2, description);
+        pstmt.setDouble(3, price);
+        pstmt.setInt(4, stock);
+        pstmt.setInt(5, productId);
+
+        int rowsAffected = pstmt.executeUpdate();
+
+        pstmt.close();
+        conn.close();
+
+        return rowsAffected > 0;
     }
 }

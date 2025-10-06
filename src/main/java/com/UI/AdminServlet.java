@@ -13,7 +13,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -29,7 +28,6 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Check if user is admin
         HttpSession session = request.getSession();
         UserInfo userInfo = (UserInfo) session.getAttribute("userInfo");
 
@@ -114,7 +112,6 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    // Existing user methods...
     private void handleAddUser(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String email = request.getParameter("email");
@@ -169,7 +166,6 @@ public class AdminServlet extends HttpServlet {
         String name = request.getParameter("name");
         String description = request.getParameter("description");
 
-        // Add null checks
         String priceParam = request.getParameter("price");
         String stockQuantityParam = request.getParameter("stockQuantity");
         String categoryParam = request.getParameter("category");
@@ -205,7 +201,6 @@ public class AdminServlet extends HttpServlet {
         String name = request.getParameter("name");
         String description = request.getParameter("description");
 
-        // Add null checks
         String priceParam = request.getParameter("price");
         String stockQuantityParam = request.getParameter("stockQuantity");
         String categoryParam = request.getParameter("category"); // CHANGED from categoryid to category
@@ -250,7 +245,6 @@ public class AdminServlet extends HttpServlet {
         }
     }
 
-    // Order methods
     private void handleUpdateOrderStatus(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         int orderId = Integer.parseInt(request.getParameter("orderId"));

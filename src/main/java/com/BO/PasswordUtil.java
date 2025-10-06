@@ -11,28 +11,23 @@ public class PasswordUtil {
     private static final int SALT_BYTES = 16;
     private static final String DELIMITER = ":";
 
-    // Generate salt+hash combination stored as "salt:hash"
     public static String generateSaltedHash(String password) {
         try {
-            // Generate salt
             byte[] salt = new byte[SALT_BYTES];
             RAND.nextBytes(salt);
             String saltBase64 = Base64.getEncoder().encodeToString(salt);
 
-            // Hash password with salt
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(salt);
             byte[] hashed = md.digest(password.getBytes(StandardCharsets.UTF_8));
             String hashBase64 = Base64.getEncoder().encodeToString(hashed);
 
-            // Return combined string
             return saltBase64 + DELIMITER + hashBase64;
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 not supported", e);
         }
     }
 
-    // Verify plain password against stored salt:hash combination
     public static boolean verifyPassword(String plainPassword, String storedSaltedHash) {
         if (storedSaltedHash == null || !storedSaltedHash.contains(DELIMITER)) {
             return false;

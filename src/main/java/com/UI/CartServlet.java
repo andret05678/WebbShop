@@ -75,7 +75,6 @@ public class CartServlet extends HttpServlet {
 
         out.println("<h2>Your Cart</h2>");
 
-        // Display username from UserInfo
         String username = (String) session.getAttribute("username");
         if (username != null) {
             out.println("<p style='text-align:center;'>Welcome, " + username + " | ");
