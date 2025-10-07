@@ -5,7 +5,7 @@ public class Category {
     private String name;
     private String description;
 
-    private Category(int id, String name, String description) {
+    protected Category(int id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;
