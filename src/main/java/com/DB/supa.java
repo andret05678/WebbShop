@@ -18,4 +18,18 @@ public class supa {
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL);
     }
+
+    public static void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                System.err.println("Error closing connection: " + e.getMessage());
+            }
+        }
+    }
+
+    public static void closeQuietly(Connection conn) {
+        closeConnection(conn);
+    }
 }

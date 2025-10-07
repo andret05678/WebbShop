@@ -155,64 +155,19 @@ public class CartServlet extends HttpServlet {
             return;
         }
 
-        Connection conn = null;
         try {
-            Class.forName("org.postgresql.Driver");
-            String url = "jdbc:postgresql://aws-1-eu-north-1.pooler.supabase.com:5432/postgres?user=postgres.yibhllavyovhbjaxwynu&password=Anton056780990";
-            conn = DriverManager.getConnection(url);
+            // Use OrderServices to handle the entire order process
+            OrderServices orderServices = new OrderServices();
+            String result = orderServices.placeOrder(userId, cart);
 
-            conn.setAutoCommit(false);
-
-            double totalAmount = 0.0;
-            for (Map<String, String> item : cart) {
-                totalAmount += Double.parseDouble(item.get("price"));
-            }
-
-            for (Map<String, String> item : cart) {
-                int productId = Integer.parseInt(item.get("id"));
-                if (!OrderServices.isProductInStock(productId)) {
-                    conn.rollback();
-                    resp.sendRedirect("cart?error=Product " + item.get("name") + " is out of stock");
-                    return;
-                }
-            }
-
-            int orderId = OrderServices.insertOrder(conn, userId, totalAmount);
-
-            for (Map<String, String> item : cart) {
-                int productId = Integer.parseInt(item.get("id"));
-                double price = Double.parseDouble(item.get("price"));
-
-                OrderServices.insertOrderItem(orderId, productId, price);
-
-                OrderServices.updateProductStock(productId);
-            }
-
-            conn.commit();
-
+            // Clear cart on success
             session.removeAttribute("cart");
 
-            resp.sendRedirect("cart?success=Order placed successfully! Order ID: " + orderId);
+            resp.sendRedirect("cart?success=" + result);
 
-        } catch (Exception e) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+        } catch (SQLException e) {
             e.printStackTrace();
-            resp.sendRedirect("cart?error=Failed to place order: " + e.getMessage());
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            resp.sendRedirect("cart?error=" + e.getMessage());
         }
     }
 }

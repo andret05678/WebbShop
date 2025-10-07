@@ -11,7 +11,7 @@ public class OrderItemInfo {
     private double price;
 
     public OrderItemInfo(int id, int orderId, int productId, String productName, int quantity, double price) {
-        this.id = id;
+        this.id = -1;
         this.orderId = orderId;
         this.productId = productId;
         this.productName = productName;
