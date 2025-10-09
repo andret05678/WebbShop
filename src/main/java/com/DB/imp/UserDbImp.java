@@ -25,6 +25,7 @@ public class UserDbImp extends User {
         String sql = "SELECT id, email, username, password, role_id FROM users WHERE email = '" + email + "'";
         ResultSet rs = stmt.executeQuery(sql);
 
+        conn.close();
         if (rs.next()) {
             return User.createUser(
                     rs.getInt("id"),
@@ -50,7 +51,6 @@ public class UserDbImp extends User {
 
         int rowsAffected = pstmt.executeUpdate();
 
-        // Close resources
         pstmt.close();
         conn.close();
 

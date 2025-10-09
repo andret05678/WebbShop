@@ -156,11 +156,9 @@ public class CartServlet extends HttpServlet {
         }
 
         try {
-            // Use OrderServices to handle the entire order process
             OrderServices orderServices = new OrderServices();
             String result = orderServices.placeOrder(userId, cart);
 
-            // Clear cart on success
             session.removeAttribute("cart");
 
             resp.sendRedirect("cart?success=" + result);

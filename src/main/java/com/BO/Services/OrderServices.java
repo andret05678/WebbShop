@@ -1,9 +1,9 @@
 package com.BO.Services;
 
 import com.DB.imp.OrderDbImp;
+import com.DB.supa;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +16,7 @@ public class OrderServices {
     public String placeOrder(int userId, List<Map<String, String>> cartItems) throws SQLException {
         Connection conn = null;
         try {
-            Class.forName("org.postgresql.Driver");
-            String url = "jdbc:postgresql://aws-1-eu-north-1.pooler.supabase.com:5432/postgres?user=postgres.yibhllavyovhbjaxwynu&password=Anton056780990";
-            conn = DriverManager.getConnection(url);
-
+            conn = supa.getConnection();
             conn.setAutoCommit(false);
 
             if (cartItems == null || cartItems.isEmpty()) {
@@ -33,7 +30,7 @@ public class OrderServices {
 
             for (Map<String, String> item : cartItems) {
                 int productId = Integer.parseInt(item.get("id"));
-                if (!isProductInStock(conn, productId)) {
+                if (!ProductServices.isProductInStock(productId)) {
                     throw new SQLException("Product " + item.get("name") + " is out of stock");
                 }
             }
@@ -46,7 +43,7 @@ public class OrderServices {
 
                 OrderDbImp.insertOrderItem(conn, orderId, productId, price);
 
-                updateProductStock(conn, productId);
+                ProductServices.updateProductStock(productId);
             }
 
             conn.commit();
@@ -73,23 +70,4 @@ public class OrderServices {
         }
     }
 
-    private boolean isProductInStock(Connection conn, int productId) throws SQLException {
-        String sql = "SELECT stock FROM product WHERE id = ? AND stock > 0";
-        try (var pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, productId);
-            var rs = pstmt.executeQuery();
-            return rs.next();
-        }
-    }
-
-    private void updateProductStock(Connection conn, int productId) throws SQLException {
-        String sql = "UPDATE product SET stock = stock - 1 WHERE id = ? AND stock > 0";
-        try (var pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, productId);
-            int rows = pstmt.executeUpdate();
-            if (rows == 0) {
-                throw new SQLException("Failed to update stock for product ID: " + productId);
-            }
-        }
-    }
 }
