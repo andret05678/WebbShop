@@ -37,7 +37,5 @@ public class OrderInfo {
     public Timestamp getOrderDate() { return orderDate; }
     public List<OrderItemInfo> getItems() { return items; }
 
-    // Setters
-    public void setStatus(String status) { this.status = status; }
     public void setItems(List<OrderItemInfo> items) { this.items = items; }
 }
