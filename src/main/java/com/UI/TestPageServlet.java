@@ -1,12 +1,16 @@
 package com.UI;
 
+import com.BO.Services.ProductServices;
+import com.UI.Info.ProductInfo;
 import com.UI.Info.UserInfo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
+import java.util.List;
 
 @WebServlet("/testpage")
 public class TestPageServlet extends HttpServlet {
@@ -26,15 +30,7 @@ public class TestPageServlet extends HttpServlet {
         resp.setContentType("text/html");
         PrintWriter out = resp.getWriter();
 
-        Connection conn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-
         try {
-            Class.forName("org.postgresql.Driver");
-
-            String url = "jdbc:postgresql://aws-1-eu-north-1.pooler.supabase.com:5432/postgres?user=postgres.yibhllavyovhbjaxwynu&password=Anton056780990";
-            conn = DriverManager.getConnection(url);
 
             out.println("<html><head><title>Store</title>");
             out.println("<style>");
@@ -64,10 +60,16 @@ public class TestPageServlet extends HttpServlet {
             out.println("Welcome, " + userInfo.getUsername() + " (");
 
             String role = "";
-            switch(userInfo.getRole()) {
-                case 1: role = "Customer"; break;
-                case 2: role = "Staff"; break;
-                case 3: role = "Admin"; break;
+            switch (userInfo.getRole()) {
+                case 1:
+                    role = "Customer";
+                    break;
+                case 2:
+                    role = "Staff";
+                    break;
+                case 3:
+                    role = "Admin";
+                    break;
             }
             out.println(role + ")");
             out.println("</span> ");
@@ -81,17 +83,16 @@ public class TestPageServlet extends HttpServlet {
             out.println("</div>");
             out.println("</div>");
 
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT id, name, price FROM Product LIMIT 5");
+            List<ProductInfo> products = ProductServices.getAllProducts();
 
             out.println("<h2>Available Products</h2>");
             out.println("<table>");
             out.println("<tr><th>ID</th><th>Name</th><th>Price</th><th>Action</th></tr>");
 
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                String price = rs.getBigDecimal("price").toString();
+            for (ProductInfo product : products) {
+                int id = product.getId();
+                String name = product.getName();
+                String price = product.getPrice()+"";
 
                 out.println("<tr>");
                 out.println("<td>" + id + "</td>");
@@ -112,22 +113,8 @@ public class TestPageServlet extends HttpServlet {
 
             out.println("</body></html>");
 
-        } catch (ClassNotFoundException e) {
-            out.println("<h2>PostgreSQL Driver not found</h2>");
-            out.println("<pre>" + e.getMessage() + "</pre>");
-            e.printStackTrace();
         } catch (SQLException e) {
-            out.println("<h2>Database Connection Failed</h2>");
-            out.println("<pre>" + e.getMessage() + "</pre>");
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            throw new RuntimeException(e);
         }
     }
 

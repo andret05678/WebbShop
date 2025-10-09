@@ -79,7 +79,7 @@ public class OrderDbImp {
         List<OrderItemInfo> items = new ArrayList<>();
         Connection conn = supa.getConnection();
 
-        // Updated query without the oi.id column
+
         String sql = "SELECT oi.order_id, oi.product_id, p.name, oi.quantity, oi.price " +
                 "FROM order_item oi " +
                 "JOIN product p ON oi.product_id = p.id " +
@@ -89,10 +89,10 @@ public class OrderDbImp {
         pstmt.setInt(1, orderId);
         ResultSet rs = pstmt.executeQuery();
 
-        int itemCounter = 1; // Use counter as temporary ID since there's no id column
+        int itemCounter = 1;
         while (rs.next()) {
             OrderItemInfo item = new OrderItemInfo(
-                    itemCounter++, // Use counter as temporary ID
+                    itemCounter++,
                     rs.getInt("order_id"),
                     rs.getInt("product_id"),
                     rs.getString("name"),
@@ -212,7 +212,6 @@ public class OrderDbImp {
         return products;
     }
 
-    // Add this method to check if product is in stock
     public static boolean isProductInStock(Connection conn, int productId) throws SQLException {
         String sql = "SELECT stock FROM product WHERE id = ? AND stock > 0";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {

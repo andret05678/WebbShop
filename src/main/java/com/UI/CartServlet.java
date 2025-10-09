@@ -38,7 +38,7 @@ public class CartServlet extends HttpServlet {
             cart.removeIf(p -> p.get("id").equals(idToRemove));
         } else if ("placeOrder".equals(action)) {
             handlePlaceOrder(req, resp, session, cart);
-            return; // Return early since handlePlaceOrder handles the response
+            return;
         }
 
         session.setAttribute("cart", cart);
@@ -82,7 +82,6 @@ public class CartServlet extends HttpServlet {
 
         out.println("<div class='container'>");
 
-        // Display messages from order placement
         String success = req.getParameter("success");
         String error = req.getParameter("error");
         if (success != null) {
